@@ -1,7 +1,13 @@
 const { readdir } = require('fs').promises;
 const path = require('path');
 
+const cache = new Map();
+
 async function getFileList(dirName, filter, depth = 0) {
+    const cacheKey = `${dirName}:${filter.type}:${depth}`;
+
+    if (cache.has(cacheKey)) return cache.get(cacheKey);
+
     let files = [];
     const items = await readdir(dirName, { withFileTypes: true });
 
@@ -16,6 +22,8 @@ async function getFileList(dirName, filter, depth = 0) {
             files = [...files, ...subFiles];
         } else if (item.name.endsWith(filter.type)) files.push(itemPath);
     }
+
+    cache.set(cacheKey, files);
 
     return files;
 }
